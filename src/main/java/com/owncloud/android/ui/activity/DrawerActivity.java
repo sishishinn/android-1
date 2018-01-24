@@ -449,8 +449,8 @@ public abstract class DrawerActivity extends ToolbarActivity
                         SearchEvent.UnsetType.NO_UNSET), menuItem.getItemId());
                 break;
             case R.id.nav_photos:
-                handleSearchEvents(new SearchEvent("image/%", SearchRemoteOperation.SearchType.CONTENT_TYPE_SEARCH,
-                        SearchEvent.UnsetType.NO_UNSET), menuItem.getItemId());
+                handleSearchEvents(new SearchEvent("image/%", SearchRemoteOperation.SearchType.PHOTO_SEARCH,
+                                                   SearchEvent.UnsetType.NO_UNSET), menuItem.getItemId());
                 break;
             case R.id.nav_on_device:
                 EventBus.getDefault().post(new ChangeMenuEvent());
@@ -502,10 +502,6 @@ public abstract class DrawerActivity extends ToolbarActivity
                 break;
             case R.id.nav_recently_modified:
                 handleSearchEvents(new SearchEvent("", SearchRemoteOperation.SearchType.RECENTLY_MODIFIED_SEARCH,
-                        SearchEvent.UnsetType.UNSET_BOTTOM_NAV_BAR), menuItem.getItemId());
-                break;
-            case R.id.nav_shared:
-                handleSearchEvents(new SearchEvent("", SearchRemoteOperation.SearchType.SHARED_SEARCH,
                         SearchEvent.UnsetType.UNSET_BOTTOM_NAV_BAR), menuItem.getItemId());
                 break;
             case R.id.nav_videos:

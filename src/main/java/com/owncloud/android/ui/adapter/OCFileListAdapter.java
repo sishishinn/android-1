@@ -109,9 +109,12 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private AppPreferences preferences;
     private List<OCFile> mFiles = new ArrayList<>();
     private List<OCFile> mFilesAll = new ArrayList<>();
+    private boolean mJustFolders; // todo check
     private boolean mHideItemOptions;
-    private boolean gridView;
-    private boolean multiSelect;
+    private long lastTimestamp;
+
+    private boolean gridView = false;
+    private boolean multiSelect = false;
     private Set<OCFile> checkedFiles;
 
     private FileDataStorageManager mStorageManager;
@@ -132,6 +135,7 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Setter private OCFile highlightedItem;
 
     public OCFileListAdapter(
+        boolean justFolders,
         Context context,
         Account account,
         AppPreferences preferences,
@@ -140,8 +144,8 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         boolean argHideItemOptions,
         boolean gridView
     ) {
-
         this.ocFileListFragmentInterface = ocFileListFragmentInterface;
+        mJustFolders = justFolders;
         mContext = context;
         this.preferences = preferences;
         this.account = account;
@@ -579,8 +583,10 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     thumbnailView.setBackgroundColor(mContext.getResources().getColor(R.color.background_color));
                 }
             } else {
-                thumbnailView.setImageDrawable(MimeTypeUtil.getFileTypeIcon(file.getMimeType(), file.getFileName(),
-                                                                            account, mContext));
+                thumbnailView.setImageDrawable(MimeTypeUtil.getFileTypeIcon(file.getMimeType(),
+                                                                            file.getFileName(),
+                                                                            account,
+                                                                            mContext));
             }
         }
     }
@@ -717,18 +723,20 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
 
     public void setData(List<Object> objects, ExtendedListFragment.SearchType searchType,
-                        FileDataStorageManager storageManager, OCFile folder) {
+                        FileDataStorageManager storageManager, OCFile folder, boolean clear) {
         if (storageManager != null && mStorageManager == null) {
             mStorageManager = storageManager;
         }
-        mFiles.clear();
+        if (clear) {
+            mFiles.clear();
+        }
 
         // early exit
         if (objects.size() > 0 && mStorageManager != null) {
             if (searchType == ExtendedListFragment.SearchType.SHARED_FILTER) {
                 parseShares(objects);
             } else {
-                parseVirtuals(objects, searchType);
+                parseVirtuals(objects, searchType, clear);
             }
         }
 
@@ -788,7 +796,7 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         mStorageManager.saveShares(shares);
     }
 
-    private void parseVirtuals(List<Object> objects, ExtendedListFragment.SearchType searchType) {
+    private void parseVirtuals(List<Object> objects, ExtendedListFragment.SearchType searchType, boolean clear) {
         VirtualFolderType type;
         boolean onlyImages = false;
         switch (searchType) {
@@ -798,6 +806,7 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             case PHOTO_SEARCH:
                 type = VirtualFolderType.PHOTOS;
                 onlyImages = true;
+                lastTimestamp = ((RemoteFile) objects.get(objects.size() - 1)).getModifiedTimestamp() / 1000;
                 break;
             default:
                 type = VirtualFolderType.NONE;
@@ -847,6 +856,24 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         notifyDataSetChanged();
     }
 
+    /**
+     * Filter for getting only the folders
+     *
+     * @param files Collection of files to filter
+     * @return Folders in the input
+     */
+    public ArrayList<OCFile> getFolders(ArrayList<OCFile> files) {
+        ArrayList<OCFile> ret = new ArrayList<>();
+
+        for (OCFile file : files) {
+            if (file.isFolder()) {
+                ret.add(file);
+            }
+        }
+
+        return ret;
+    }
+
     public Set<OCFile> getCheckedItems() {
         return checkedFiles;
     }
@@ -869,6 +896,14 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             mFilesFilter = new FilesFilter();
         }
         return mFilesFilter;
+    }
+
+    public void resetLastTimestamp() {
+        lastTimestamp = -1;
+    }
+
+    public long getLastTimestamp() {
+        return lastTimestamp;
     }
 
     @Override
