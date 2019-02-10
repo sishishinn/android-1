@@ -395,7 +395,7 @@ public class UploadListAdapter extends SectionedRecyclerViewAdapter<SectionedVie
 
             if ("image/png".equals(item.getMimeType())) {
                 itemViewHolder.thumbnail.setBackgroundColor(parentActivity.getResources()
-                        .getColor(R.color.background_color));
+                        .getColor(R.color.bg_default));
             }
 
 
@@ -430,7 +430,7 @@ public class UploadListAdapter extends SectionedRecyclerViewAdapter<SectionedVie
 
             if ("image/png".equalsIgnoreCase(item.getMimeType())) {
                 itemViewHolder.thumbnail.setBackgroundColor(parentActivity.getResources()
-                        .getColor(R.color.background_color));
+                        .getColor(R.color.bg_default));
             }
         } else {
             itemViewHolder.thumbnail.setImageDrawable(MimeTypeUtil.getFileTypeIcon(item.getMimeType(), fileName,
