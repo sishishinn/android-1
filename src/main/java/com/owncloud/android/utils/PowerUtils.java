@@ -5,6 +5,9 @@ import android.content.Context;
 import android.os.Build;
 import android.os.PowerManager;
 
+import com.nextcloud.client.preferences.AppPreferences;
+import com.nextcloud.client.preferences.AppPreferencesImpl;
+
 public final class PowerUtils {
 
     private PowerUtils() {
@@ -17,6 +20,12 @@ public final class PowerUtils {
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static boolean isPowerSaveMode(Context context) {
+        AppPreferences preferences = AppPreferencesImpl.fromContext(context);
+
+        if (preferences.isPowerCheckDisabled()) {
+            return false;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             return powerManager != null && powerManager.isPowerSaveMode();

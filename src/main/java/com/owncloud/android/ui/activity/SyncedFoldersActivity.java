@@ -98,7 +98,7 @@ public class SyncedFoldersActivity extends FileActivity implements SyncedFolderA
         SyncedFolderPreferencesDialogFragment.OnSyncedFolderPreferenceListener, Injectable {
 
     private static final String[] PRIORITIZED_FOLDERS = new String[]{"Camera", "Screenshots"};
-    private static final List<String> SPECIAL_MANUFACTURER = Arrays.asList("Samsung", "Huawei", "Xiaomi");
+    private static final List<String> SPECIAL_MANUFACTURER = Arrays.asList("samsung", "huawei", "xiaomi");
     public static final String EXTRA_SHOW_SIDEBAR = "SHOW_SIDEBAR";
     private static final String SYNCED_FOLDER_PREFERENCES_DIALOG_TAG = "SYNCED_FOLDER_PREFERENCES_DIALOG";
     private static final String TAG = SyncedFoldersActivity.class.getSimpleName();
@@ -114,6 +114,7 @@ public class SyncedFoldersActivity extends FileActivity implements SyncedFolderA
     private String path;
     private int type;
     @Inject AppPreferences preferences;
+    private boolean isSpecialManufacturer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,13 +172,44 @@ public class SyncedFoldersActivity extends FileActivity implements SyncedFolderA
         if (ThemeUtils.themingEnabled(this)) {
             setTheme(R.style.FallbackThemingTheme);
         }
+
+        isSpecialManufacturer = SPECIAL_MANUFACTURER.contains(Build.MANUFACTURER.toLowerCase(Locale.ROOT));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.synced_folders_menu, menu);
+
+        if (isSpecialManufacturer) {
+            MenuItem item = menu.findItem(R.id.action_disable_power_save_check);
+            item.setVisible(true);
+
+            item.setChecked(preferences.isPowerCheckDisabled());
+
+            item.setOnMenuItemClickListener(powerCheck -> {
+                if (!powerCheck.isChecked()) {
+                    showPowerCheckDialog();
+                }
+
+                preferences.setPowerCheckDisabled(!powerCheck.isChecked());
+                powerCheck.setChecked(!powerCheck.isChecked());
+
+                return true;
+            });
+        }
+
         return true;
+    }
+
+    private void showPowerCheckDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(findViewById(R.id.root_layout))
+            .setPositiveButton(R.string.common_ok, (dialog, which) -> dialog.dismiss())
+            .setTitle(ThemeUtils.getColoredTitle(getResources().getString(R.string.power_check_dialog_title),
+                                                 ThemeUtils.primaryAccentColor(this)))
+            .setMessage(getString(R.string.power_save_check_dialog_message));
+        builder.show();
     }
 
     /**
@@ -706,9 +738,6 @@ public class SyncedFoldersActivity extends FileActivity implements SyncedFolderA
     }
 
     private void showBatteryOptimizationInfo() {
-
-        boolean isSpecialManufacturer = SPECIAL_MANUFACTURER.contains(Build.MANUFACTURER.toLowerCase(Locale.ROOT));
-
         if (isSpecialManufacturer && checkIfBatteryOptimizationEnabled() || checkIfBatteryOptimizationEnabled()) {
             AlertDialog alertDialog = new AlertDialog.Builder(this, R.style.Theme_ownCloud_Dialog)
                 .setTitle(getString(R.string.battery_optimization_title))

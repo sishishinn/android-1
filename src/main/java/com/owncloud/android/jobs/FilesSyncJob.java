@@ -113,7 +113,7 @@ public class FilesSyncJob extends Job {
         final boolean overridePowerSaving = bundle.getBoolean(OVERRIDE_POWER_SAVING, false);
 
         // If we are in power save mode, better to postpone upload
-        if (PowerUtils.isPowerSaveMode(context) && !overridePowerSaving) {
+        if (!overridePowerSaving && PowerUtils.isPowerSaveMode(context)) {
             wakeLock.release();
             return Result.SUCCESS;
         }
