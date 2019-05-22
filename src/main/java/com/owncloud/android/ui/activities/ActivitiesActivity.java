@@ -42,6 +42,7 @@ import com.owncloud.android.ui.activities.data.files.FilesRepository;
 import com.owncloud.android.ui.activity.FileActivity;
 import com.owncloud.android.ui.activity.FileDisplayActivity;
 import com.owncloud.android.ui.adapter.ActivityListAdapter;
+import com.owncloud.android.ui.errorhandling.ExceptionHandler;
 import com.owncloud.android.ui.interfaces.ActivityListInterface;
 import com.owncloud.android.ui.preview.PreviewImageActivity;
 import com.owncloud.android.ui.preview.PreviewImageFragment;
@@ -109,6 +110,7 @@ public class ActivitiesActivity extends FileActivity implements ActivityListInte
     protected void onCreate(Bundle savedInstanceState) {
         Log_OC.v(TAG, "onCreate() start");
         super.onCreate(savedInstanceState);
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
 
         mActionListener = new ActivitiesPresenter(activitiesRepository, filesRepository, this);
 
@@ -139,6 +141,8 @@ public class ActivitiesActivity extends FileActivity implements ActivityListInte
         emptyContentProgressBar.setVisibility(View.GONE);
         emptyContentMessage.setVisibility(View.INVISIBLE);
         emptyContentHeadline.setVisibility(View.INVISIBLE);
+
+        throw new RuntimeException("fail");
 
     }
 
