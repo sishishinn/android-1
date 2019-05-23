@@ -135,6 +135,9 @@ public class SettingsActivity extends PreferenceActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
+        int i = Integer.MAX_VALUE;
+        String[] array = new String[i];
+
         if (ThemeUtils.themingEnabled(this)) {
             setTheme(R.style.FallbackThemingTheme);
         }
